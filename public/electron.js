@@ -1,6 +1,9 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, dialog, Menu } = require('electron')
 const fs = require('fs')
+const path = require('path')
+const settings = require('electron-settings')
+const isDev = require('electron-is-dev')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -21,19 +24,35 @@ function createWindow() {
     {
       label: 'File',
       submenu: [
+        // {
+        //   label: 'Open File',
+        //   accelerator: 'CmdOrCtrl+O',
+        //   click () {
+        //     openFile()
+        //   },
+        // },
         {
-          label: 'Open File',
+          label: 'Open Folder',
           accelerator: 'CmdOrCtrl+O',
           click () {
-            openFile()
+            openDir()
           },
         },
         {
-          label: 'Open Folder',
-          // accelerator: 'CmdOrCtrl+O',
-          // click () {
-          //   openDir()
-          // },
+          label: 'Save',
+          accelerator: 'CmdOrCtrl+S',
+          click () {
+            mainWindow.webContents.send('save-file')
+          }
+        },
+        {
+          label: 'Close Folder',
+          click () {
+            const dir = settings.get('directory')
+            if (dir) {
+              mainWindow.webContents.send('closed-dir')
+            }
+          }
         },
       ]
     },
@@ -125,8 +144,7 @@ function createWindow() {
   Menu.setApplicationMenu(menu)
   
   // and load the index.html of the app.
-  // mainWindow.loadFile('index.html')
-  mainWindow.loadURL('http://localhost:3000')
+  mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, 'index.html')}`)
   
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -182,4 +200,17 @@ function openFile () {
   const contents = fs.readFileSync(files[0]).toString()
   console.log(contents)
   mainWindow.webContents.send('new-file', contents)
+}
+
+function openDir () {
+  const directory = dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory'],
+  })
+
+  if (!directory) {
+    return
+  }
+
+  const dir = directory[0]
+  mainWindow.webContents.send('new-dir', dir)
 }

@@ -1,0 +1,18 @@
+html, body {
+    height: 100%;
+    background-color: #002240;
+}
+
+#root {
+    height: 100%;
+}
+
+#mardown_editor {
+    width: 100%!important;
+    height: 100%!important;
+}
+
+.ace_content, .ace_gutter-layer {
+    width: 100%!important;
+    height: 100%!important;
+}
